@@ -32,7 +32,7 @@ const {image} = require('./router/imgDisplay/imgDisplay');
 const {remove} = require('./router/remove/remove');
 const {productStruct} = require('./router/ProductStruct/ProductStruct')
 const dotenv = require('dotenv').config()
-let port = process.env.PORT || 3002
+let port = process.env.PORT || 443
 
 console.log("adad");
 app.use(cors());
