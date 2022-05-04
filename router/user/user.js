@@ -3,6 +3,7 @@ const router = express.Router();
 const { getDb } = require('../../database/database')
 const jwt = require('jsonwebtoken');
 const { ObjectId } = require('mongodb');
+const { response } = require('express');
 
 router.use('/registerUserSignUp', (req, res, next) => {
     let db = getDb();
@@ -11,6 +12,81 @@ router.use('/registerUserSignUp', (req, res, next) => {
         res.send({status: 'insertedUser'})
     })
 })
+
+router.use('/finalRegister', (req,res, next)=>{
+    let db = getDb();
+    const { number, pass} = req.headers;
+    db.collection('users').insertOne({ name: '!!', email: '!!', number: number, password: pass }).then((response) => {
+        res.send(response)
+    })
+})
+router.use('/numberOtpGen', (req, res, next)=>{
+    const {number} = req.headers
+    const randomNum = Math.floor(1000 + Math.random() * 9000)
+    let db = getDb()
+    db.collection('users').findOne({number: number}).then((response)=>{
+        if(response){
+            db.collection('otp').findOne({number: number}).then((response)=>{
+                if(response){
+                    db.collection('otp').updateOne({number: number}, {$set: {
+                        otp: randomNum
+                    }}).then((response)=>{
+                        res.send({otp: randomNum})
+                    })
+                }else{
+                    db.collection('otp').insertOne({number: number, otp: randomNum}).then((response)=>{
+                        console.log(response)
+                        res.send({otp: randomNum})
+                    })
+                }
+            })
+        }else{
+            res.send({error: "Nouser"})
+        }
+        
+    })
+    
+})
+
+router.use('/numberOtpGenReg', (req,res, next)=>{
+    let db = getDb();
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    const {number} = req.headers;
+    db.collection('users').findOne({number: number}).then((response)=>{
+        if(response){
+            res.send({error: 'already'})
+        }else{
+            db.collection('otp').findOne({number: number}).then((response)=>{
+                if(response){
+                    db.collection('otp').updateOne({number: number}, {$set: {
+                        otp: randomNum
+                    }}).then((response)=>{
+                        res.send({otp: randomNum})
+                    })
+                }else{
+                    db.collection('otp').insertOne({number: number, otp: randomNum}).then((response)=>{
+                        console.log(response)
+                        res.send({otp: randomNum})
+                    })
+                }
+            })
+        }
+    })
+    
+})
+
+router.use('/checkOtp', (req, res, next)=>{
+    let db = getDb();
+    const {phone, otp} = req.headers
+    db.collection('otp').findOne({number: phone, otp: parseInt(otp)}).then((response)=>{
+        if(response){
+            res.send({status: 'done'})
+        }else{
+            res.send({status: 'error'})
+        }
+    })
+})
+
 
 router.use('/updateUser', (req, res, next)=>{
     let db = getDb();
@@ -36,17 +112,40 @@ router.use('/logoutUser', (req, res, next)=>{
 
 router.use('/loginUser', (req, res, next) => {
     let db = getDb();
-    const { email, password } = req.headers;
-    db.collection('users').findOne({ email: email, password: password }).then((response) => {
+    console.log("login user")
+    const { phone, otp } = req.headers;
+    console.log(phone, otp)
+    db.collection('otp').findOne({ number: phone, otp: parseInt(otp) }).then((response) => {
         if (response) {
             // const token = response._id
             // res.cookie('jwt', token)
-            res.send(response)
+            db.collection("users").findOne({number: phone}).then((response)=>{
+                if(response){
+                    res.send(response)
+                }else{
+                    res.send({message: 'no authentication'})
+                }
+            })
         } else {
+            console.log("No Authentication")
             res.send({message: 'no authentication'})
         }
     })
 })
+
+router.use('/directLogin', (req, res, next)=>{
+    let db = getDb();
+    console.log("direct login")
+    const {number, password} = req.headers
+    db.collection('users').findOne({number: number, password: password}).then((response)=>{
+        if(response){
+            res.send(response)
+        }else{
+            res.send({message: 'no authentication'})
+        }
+    })
+})
+
 
 router.use('/userAuthenticated', (req, res, next) => {
     // const cookie = req.cookies['jwt'];
