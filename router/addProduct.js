@@ -5,6 +5,7 @@ const { ObjectId } = require('mongodb');
 
 router.use('/addProduct', (req, res, next) => {
     let db = getDb();
+    console.log("product")
     let { categories } = req.body;
     let {addedby} = req.headers; 
     console.log(req.body)
@@ -43,34 +44,66 @@ router.use('/addProduct', (req, res, next) => {
         const filterCategory = category.label;
         db.collection('category').find({name: filterCategory}).toArray().then((filter)=>{
             const filterArray = filter[0].filterArray;
-            let index = filterArray.length;
-            let initial = 0;
-            db.collection('cycles').find({name: name}).toArray().then((response)=>{
-                if(response.length){
-                    res.send({status: 'error'})
-                }else {
-                    const {name, price, coupon, descPoint1, descPoint2, descPoint3, descPoint4, brand, desc, emi, overprice, images, displayimages, dateAdded, stock, quantity,  categories, category, width, lenght, height, weight, gst, hsn } = req.body
-                    console.log('*****')
-                    console.log(hsn)
-                    db.collection('cycles').insertOne({name: name, price: price, coupon: coupon, descPoint1: descPoint1, descPoint2:descPoint2, descPoint3:descPoint3, descPoint4: descPoint4, brand: brand , desc: desc, emi: emi, overprice: overprice, images: images, displayimages: displayimages, stock: stock, quantity: quantity, categories: categories, category: category, addedby: addedby, weight: weight, height: height, lenght: lenght, width: width, gst: gst, hsn: hsn }).then((response)=>{
-                        console.log(filterArray)
-                        filterArray.map((singleItem)=>{
-                            const obj = {}
-                            obj[singleItem] = req.body[singleItem];
-                            console.log(req.body)
-                            db.collection('cycles').updateOne({name: name}, {$set: obj}).then((response)=>{
-                                console.log(initial)
-                                initial++
-                                if(initial === index){
-                                    console.log("indiandaidn")
-                                    res.send({status: true});
-                                }
+            if(filterArray){
+                if(filterArray.length > 0){
+                    let index = filterArray.length;
+                    let initial = 0;
+                    db.collection('cycles').find({name: name}).toArray().then((response)=>{
+                        if(response.length){
+                            res.send({status: 'error'})
+                        }else {
+                            const {name, price, coupon, descPoint1, descPoint2, descPoint3, descPoint4, brand, desc, emi, overprice, images, displayimages, dateAdded, stock, quantity,  categories, category, width, lenght, height, weight, gst, hsn } = req.body
+                            console.log('*****')
+                            console.log(hsn)
+                            db.collection('cycles').insertOne({name: name, price: price, coupon: coupon, descPoint1: descPoint1, descPoint2:descPoint2, descPoint3:descPoint3, descPoint4: descPoint4, brand: brand , desc: desc, emi: emi, overprice: overprice, images: images, displayimages: displayimages, stock: stock, quantity: quantity, categories: categories, category: category, addedby: addedby, weight: weight, height: height, lenght: lenght, width: width, gst: gst, hsn: hsn }).then((response)=>{
+                                console.log(filterArray)
+                                filterArray.map((singleItem)=>{
+                                    const obj = {}
+                                    obj[singleItem] = req.body[singleItem];
+                                    console.log(req.body)
+                                    db.collection('cycles').updateOne({name: name}, {$set: obj}).then((response)=>{
+                                        console.log(initial)
+                                        initial++
+                                        if(initial === index){
+                                            console.log("indiandaidn")
+                                            res.send({status: true});
+                                        }
+                                    })
+                                })
+                                
                             })
-                        })
-                        
+                        }
+                    })
+                }else{
+                    db.collection('cycles').find({name: name}).toArray().then((response)=>{
+                        if(response.length){
+                            res.send({status: 'error'})
+                        }else {
+                            const {name, price, coupon, descPoint1, descPoint2, descPoint3, descPoint4, brand, desc, emi, overprice, images, displayimages, dateAdded, stock, quantity,  categories, category, width, lenght, height, weight, gst, hsn } = req.body
+                            console.log('*****')
+                            console.log(hsn)
+                            db.collection('cycles').insertOne({name: name, price: price, coupon: coupon, descPoint1: descPoint1, descPoint2:descPoint2, descPoint3:descPoint3, descPoint4: descPoint4, brand: brand , desc: desc, emi: emi, overprice: overprice, images: images, displayimages: displayimages, stock: stock, quantity: quantity, categories: categories, category: category, addedby: addedby, weight: weight, height: height, lenght: lenght, width: width, gst: gst, hsn: hsn }).then((response)=>{
+                                res.send({status: true})
+                            })
+                        }
                     })
                 }
-            })
+            }else{
+                db.collection('cycles').find({name: name}).toArray().then((response)=>{
+                    if(response.length){
+                        res.send({status: 'error'})
+                    }else {
+                        const {name, price, coupon, descPoint1, descPoint2, descPoint3, descPoint4, brand, desc, emi, overprice, images, displayimages, dateAdded, stock, quantity,  categories, category, width, lenght, height, weight, gst, hsn } = req.body
+                        console.log('*****')
+                        console.log(hsn)
+                        db.collection('cycles').insertOne({name: name, price: price, coupon: coupon, descPoint1: descPoint1, descPoint2:descPoint2, descPoint3:descPoint3, descPoint4: descPoint4, brand: brand , desc: desc, emi: emi, overprice: overprice, images: images, displayimages: displayimages, stock: stock, quantity: quantity, categories: categories, category: category, addedby: addedby, weight: weight, height: height, lenght: lenght, width: width, gst: gst, hsn: hsn }).then((response)=>{
+                            res.send({status: true})
+                        })
+                    }
+                })
+            }
+
+            
         })
         
     }
