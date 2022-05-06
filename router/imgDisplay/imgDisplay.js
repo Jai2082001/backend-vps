@@ -18,7 +18,7 @@ router.use('/imgSliderDisplay', (req, res, next)=>{
             res.send({images: response.sliderImg})
         }
         else{
-            console.log(response)
+            res.send({images: []})
         }
     })
 })

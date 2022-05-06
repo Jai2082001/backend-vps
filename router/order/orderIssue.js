@@ -9,13 +9,13 @@ router.use('/orderIssue', (req, res, next) => {
     const { user, address, amount } = req.body;
     const newDate = new Date().toLocaleDateString();
     console.log(newDate)
-    db.collection('orders').insertOne({ userid: user._id, name: user.name, email: user.email, number: user.number, cart: user.cart, address: address, status: '', amount: amount, date: newDate }).then((response) => {
+    db.collection('orders').insertOne({ userid: user._id, name: user.name, email: user.email, number: user.number, cart: user.cart, address: address, status: '', amount: amount, date: newDate }).then((response2) => {
         db.collection('users').updateOne({ _id: new ObjectId(user._id) }, {
             $set: {
                 cart: []
             }
         }).then((response) => {
-            res.send(response)        
+            res.send(response2)        
         })
     })
 })
