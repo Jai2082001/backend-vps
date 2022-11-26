@@ -115,9 +115,10 @@ router.use('/updateProduct', (req, res, next) => {
     let {name, price, overprice, desc, categories, stock, coupon, emi, quantity, category, brand, _id} = req.body;
     let {id} = req.body;
     if(product === 'Cycle'){
-        let {weight, suspension, rear, front, gear , wheel, userType, frame} = req.body;
+        let {weight, suspension, rear, front, gear , wheel, userType, frame, brakes} = req.body;
         db.collection('cycles').updateOne({_id: new ObjectId(id)}, {$set: {
             name: name,
+            brakes: brakes,
             price: price,
             overprice: overprice,
             desc: desc,
@@ -186,49 +187,5 @@ router.use('/updateProduct', (req, res, next) => {
         })
     }
 })    
-    exports.addProduct = router;
 
-
-
-    //db.collection('cycles').updateOne({_id: new ObjectId(id)}, {$set: {
-        //     name: name,
-        //     price: price,
-        //     type: type,
-        //     category: category,
-        //     desc: desc,
-        //     coupon: coupon,
-        //     overprice: overprice,
-        //     emi: emi,
-        //     brand: brand,
-        //     stock: stock,
-        //     quantity: quantity
-        // }}).then((response)=>{
-        //     console.log(response)
-        //     res.send(response)
-        // })
-        // // db.collection('cycles').find({ _id: ObjectId(id) }).toArray().then((response) => {
-        // //     if (response.length > 0) {
-        // //         db.collection('cycles').updateOne({ _id: id }, {
-        // //             $set: {
-        // //                 name: name,
-        // //                 price: price,
-        // //                 type: type,
-        // //                 category: category,
-        // //                 desc: desc,
-        // //                 coupon: coupon,
-        // //                 overprice: overprice,
-        // //                 emi: emi,
-        // //                 brand: brand,
-        // //                 stock: stock
-        // //             }
-        // //         }).then((response) => {
-        // //             console.log(response)
-        // //             if (response) {
-        // //                 res.send(response);
-        // //             } else {
-        // //                 res.send({status: 'Some Error Has Occured'})
-        // //             }
-        // //         })
-        // //     } else {
-        // //         res.send({status: 'Not in the Database'})
-        // //     }
+exports.addProduct = router;

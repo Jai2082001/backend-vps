@@ -30,7 +30,8 @@ const {bulkUpdate} = require('./router/bulkUpdate/bulkUpdate');
 const {productType} = require('./router/productType/productType');
 const {image} = require('./router/imgDisplay/imgDisplay');
 const {remove} = require('./router/remove/remove');
-const {productStruct} = require('./router/ProductStruct/ProductStruct')
+const {productStruct} = require('./router/ProductStruct/ProductStruct');
+const {salestat} = require('./router/salestats')
 const dotenv = require('dotenv').config()
 let port = 5000
 
@@ -38,6 +39,7 @@ console.log("adad");
 app.use(cors());
 app.use(cookieParser())
 app.use(bodyParser.json({limit: '100mb'}))
+app.use(salestat);
 app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
 app.use(auth);
 app.use(accessoriesAdd);
