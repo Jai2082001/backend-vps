@@ -33,9 +33,23 @@ router.use('/cartDisplay', (req, res, next)=>{
     let db = getDb();
     const {userid} = req.headers;
     console.log(userid)
+    
     db.collection('users').findOne({_id: new ObjectId(userid)}).then((response)=>{
         console.log(response)
+        let newCart =  response.cart;
+        db.collection('orders').find().toArray().then((resp)=>{
+            // newCart.orderId = resp.length + 1;
+            for(let i=0;i<newCart.length;i++){
+                newCart[i].product.orderId = resp.length + 1;
+            }  
+        db.collection('users').updateOne({_id: new ObjectId(userid)}, {
+            $set: {
+                cart:newCart
+            }
+        })
         res.send({user: response})
+        })
+        
     })
 })
 
@@ -90,68 +104,84 @@ router.use('/cartAssociation', (req, res, next) => {
     console.log('-------------------------------------------------------')
     const { carts, userid, quantity, status } = req.body;
     let db = getDb()
-    if(status){
-        console.log('Associated status')
-        db.collection('users').findOne({_id: new ObjectId(userid)}).then((response)=>{
-            if(response.cart){
-                let array = response.cart;
-                console.log(carts)
-                console.log(array)
-                for(let i=0;i<carts.length;i++){
-                    flag = 0 
-                    for(let j=0;j<response.cart.length;j++){
-                        console.log('-------------------')
-                        console.log(response.cart[j].product)
-                        console.log(carts[i].product)
-                        if(response.cart[j].product._id === carts[i].product._id){
-                            flag++
-                            array[j].quantity = array[j].quantity + carts[i].quantity
-                            console.log('flag ++ ')
+    db.collection('orders').find().toArray().then((response)=>{
+        console.log(response);
+        console.log(response.length)
+        let orderId = response.length + 1;
+        carts.orderId = orderId;
+        if(status){
+            console.log('Associated status')
+            db.collection('users').findOne({_id: new ObjectId(userid)}).then((response)=>{
+                if(response.cart){
+                    let array = response.cart;
+                    console.log(carts)
+                    console.log(array)
+                    for(let i=0;i<carts.length;i++){
+                        flag = 0 
+                        for(let j=0;j<response.cart.length;j++){
+                            console.log('-------------------')
+                            console.log(response.cart[j].product)
+                            console.log(carts[i].product)
+                            if(response.cart[j].product._id === carts[i].product._id){
+                                flag++
+                                array[j].quantity = array[j].quantity + carts[i].quantity
+                                console.log('flag ++ ')
+                            }
+                        }
+                        if(flag == 0){
+                            array.push({product: carts[i].product, quantity: carts[i].quantity})
                         }
                     }
-                    if(flag == 0){
-                        array.push({product: carts[i].product, quantity: carts[i].quantity})
-                    }
+                    db.collection('users').updateOne({_id: new ObjectId(userid)}, {
+                        $set: {
+                            cart: array
+                        }
+                    }).then((response)=>{
+                        res.send({status: 'done'})
+                    })
+                }else{
+                    console.log('-carts')
+                    console.log(carts)
+                    db.collection('users').updateOne({_id: new ObjectId(userid)}, {$set: {
+                        cart: carts
+                    }}).then((response)=>{
+                        res.send({status: 'done'})
+                    })
                 }
-                db.collection('users').updateOne({_id: new ObjectId(userid)}, {
-                    $set: {
-                        cart: array
-                    }
-                }).then((response)=>{
-                    res.send({status: 'done'})
-                })
-            }else{
-                console.log('-carts')
-                console.log(carts)
-                db.collection('users').updateOne({_id: new ObjectId(userid)}, {$set: {
-                    cart: carts
-                }}).then((response)=>{
-                    res.send({status: 'done'})
-                })
-            }
-        })
-    }else{
-        console.log("Associated")
-        db.collection('users').findOne({ _id: new ObjectId(userid) }).then((response) => {
-            let product;
-            let flag = 0;
-            if (response.cart) {        
-                for (let i = 0; i < response.cart.length; i++) {
-                    if (flag > 0) {
-                        break;
-                    }
-                    if (response.cart[i].product._id === carts._id) {
-                        flag++
-                        product = { product: response.cart[i].product, quantity: response.cart[i].quantity + quantity }
-                        const updateObj = { $set: {} };
-                        updateObj.$set['cart.'+i] = product;
-                        db.collection('users').updateOne({ _id: new ObjectId(userid) }, updateObj).then((response) => {
-                            res.send({ status: 'done'})
+            })
+        }else{
+            console.log("Associated")
+            db.collection('users').findOne({ _id: new ObjectId(userid) }).then((response) => {
+                let product;
+                let flag = 0;
+                if (response.cart) {        
+                    for (let i = 0; i < response.cart.length; i++) {
+                        if (flag > 0) {
+                            break;
+                        }
+                        if (response.cart[i].product._id === carts._id) {
+                            flag++
+                            product = { product: response.cart[i].product, quantity: response.cart[i].quantity + quantity }
+                            const updateObj = { $set: {} };
+                            updateObj.$set['cart.'+i] = product;
+                            db.collection('users').updateOne({ _id: new ObjectId(userid) }, updateObj).then((response) => {
+                                res.send({ status: 'done'})
+                            })
+                        } 
+                    }    
+        
+                    if (flag === 0) {
+                        db.collection('users').updateOne({ _id: new ObjectId(userid) }, {
+                            $push: {
+                                cart: {product: carts, quantity: quantity}
+                            }
+                        }).then((response) => {
+                            res.send({status: 'done'})
                         })
-                    } 
-                }    
-    
-                if (flag === 0) {
+                    }
+                        
+                }   
+                else {
                     db.collection('users').updateOne({ _id: new ObjectId(userid) }, {
                         $push: {
                             cart: {product: carts, quantity: quantity}
@@ -160,19 +190,10 @@ router.use('/cartAssociation', (req, res, next) => {
                         res.send({status: 'done'})
                     })
                 }
-                    
-            }   
-            else {
-                db.collection('users').updateOne({ _id: new ObjectId(userid) }, {
-                    $push: {
-                        cart: {product: carts, quantity: quantity}
-                    }
-                }).then((response) => {
-                    res.send({status: 'done'})
-                })
-            }
-        })
-    }
+            })
+        }
+    })
+    
     
 })
 
