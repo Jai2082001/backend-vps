@@ -1,0 +1,28 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    min-height: 100vh;
+    text-align: center;
+}
+form table{
+    display: none;
+}
+form{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+form button{
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    display: block!important;
+}

@@ -1,5 +1,9 @@
 const express = require('express');
+const path = require('path');
 const app = express();
+app.set('view engine', 'ejs');
+app.set('views', 'views');
+
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const timeout = require('connect-timeout');
@@ -32,6 +36,8 @@ const {image} = require('./router/imgDisplay/imgDisplay');
 const {remove} = require('./router/remove/remove');
 const {productStruct} = require('./router/ProductStruct/ProductStruct');
 const {salestat} = require('./router/salestats')
+const paymentRoutes = require('./routes1/paymentRoutes');
+const ccavReqHandler = require('./routes1/ccavRequestHandler');
 const dotenv = require('dotenv').config()
 let port = 5000
 
@@ -41,8 +47,11 @@ app.use(cookieParser())
 app.use(bodyParser.json({limit: '100mb'}))
 app.use(salestat);
 app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(auth);
 app.use(accessoriesAdd);
+app.use(paymentRoutes);
 app.use(accessoryDis);
 app.use(addProduct);
 app.use(getProduct);
@@ -72,6 +81,10 @@ app.get('/', (req, res, next)=>{
     console.log(req.cookies)
     res.send({status: 'hello2'})
 })
+app.post('/ccavRequestHandler', function (request, response){
+    console.log("HERE WE ARE");
+    ccavReqHandler.postReq(request, response);
+});
 mongoConnect(() => {
      app.listen(port, ()=>{
         console.log('Connected at ' + port)
