@@ -12,7 +12,7 @@ function getAlgorithm(keyBase64) {
 }
 
 exports.encrypt = function(plainText, keyBase64, ivBase64) {
-
+// adadadad
     const key = Buffer.from(keyBase64, 'base64');
     const iv = Buffer.from(ivBase64, 'base64');
 
